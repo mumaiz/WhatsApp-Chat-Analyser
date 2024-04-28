@@ -5,41 +5,33 @@ import streamlit as st
 import helper
 import preprocessor
 
-# App title
 st.sidebar.title("Whatsapp Chat Analyzer")
 
-# VADER : is a lexicon and rule-based sentiment analysis tool that is specifically attuned to sentiments.
 nltk.download('vader_lexicon')
 
-# File upload button
 uploaded_file = st.sidebar.file_uploader("Choose a file")
 
-# Main heading
 st.markdown("<h1 style='text-align: center; color: grey;'>Whatsapp Chat Analyzer</h1>",
             unsafe_allow_html=True)
 
 if uploaded_file is not None:
 
-    # Getting byte form & then decoding
     bytes_data = uploaded_file.getvalue()
     d = bytes_data.decode("utf-8")
 
-    # Perform preprocessing
     data = preprocessor.preprocess(d)
 
 
 
     from nltk.sentiment.vader import SentimentIntensityAnalyzer
-    # Object
+ 
     sentiments = SentimentIntensityAnalyzer()
 
-    # Creating different columns for (Positive/Negative/Neutral)
     data["po"] = [sentiments.polarity_scores(i)["pos"] for i in data["message"]]  # Positive
     data["ne"] = [sentiments.polarity_scores(i)["neg"] for i in data["message"]]  # Negative
     data["nu"] = [sentiments.polarity_scores(i)["neu"] for i in data["message"]]  # Neutral
 
 
-    # To indentify true sentiment per row in message column
     def sentiment(d):
         if d["po"] >= d["ne"] and d["po"] >= d["nu"]:
             return 1
@@ -49,16 +41,13 @@ if uploaded_file is not None:
             return 0
 
 
-    # Creating new column & Applying function
     data['value'] = data.apply(lambda row: sentiment(row), axis=1)
 
 
     user_list = data['user'].unique().tolist()
 
-    # Sorting
     user_list.sort()
 
-    # Insert "Overall" at index 0
     user_list.insert(0, "Overall")
 
 
@@ -86,7 +75,7 @@ if uploaded_file is not None:
             st.header("Links Shared")
             st.title(num_links)
 
-            # active map
+        # active map        
         st.title('Activity Map')
         col1, col2 = st.columns(2)
 
@@ -268,7 +257,7 @@ if uploaded_file is not None:
             plt.xticks(rotation='vertical')
             st.pyplot(fig)
 
-        # finding the busiest users in the group (Group level)
+        # Most Active User
         if selected_user == 'Overall':
             st.title('Most Active Users')
             x, new_df = helper.most_busy_users(data)  # Using 'data' instead of 'df'
